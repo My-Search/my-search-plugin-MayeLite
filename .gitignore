@@ -1,0 +1,17 @@
+# 打包产物
+dist/
+
+# 测试运行期产物（浏览器 profile 与截图；异常中断时会残留）
+test/_chrome-profile-*/
+test/_shot-*.png
+
+# 系统文件
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 编辑器
+.vscode/
+.idea/
+*.swp
+*~

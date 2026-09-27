@@ -1,0 +1,655 @@
+/* MayeLite 快速启动 —— 宿主会把本样式 scope 到 `#text_show .plugin-view`，
+   因此可直接用宿主主题变量（var(--token, 兜底)）自动跟随亮/暗主题。
+   注意：#text_show 同时挂了 ms-markdown-body 类，宿主 markdown 排版（h2/p 的
+   margin、border）会波及本视图——下面的元素显式声明 margin 归零。 */
+
+.ml {
+  --ml-line: var(--line, #e6e8ec);
+  --ml-card: var(--card, #ffffff);
+  --ml-hover: var(--hover-bg, #f7f8fa);
+  --ml-chip: var(--chip, #f5f6f8);
+  --ml-brand: var(--brand, #5b5bd6);
+  --ml-text: var(--text, #1f2329);
+  --ml-muted: var(--muted, #7a828e);
+  --ml-err: var(--err, #e02424);
+  --ml-ok: var(--ok, #1a9c5b);
+  --ml-bg: var(--surface, #f5f6f8);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ml-text);
+  /* 背景必须由插件自己给：宿主的暗色规则只作用在 body / #searchBox /
+     #my_search_box 上，`#text_show .plugin-view` 这块**没有背景色**——
+     不自带的话，暗色主题下插件区域会露出宿主的白底（浅底 + 浅字，读不清）。 */
+  background: var(--ml-bg);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  /* 留白由插件自己给：宿主用 #text_show .plugin-view { margin: -10px -16px -16px }
+     抵消了 #text_show 的 padding（让插件铺满容器），插件要边距就自己补回来。 */
+  padding: 10px 16px 16px;
+  position: relative;
+  /* 内容总是撑满宿主给的区域，背景色才不会在底部露出半截 */
+  min-height: 100%;
+  box-sizing: border-box;
+}
+
+/* hidden 属性是本插件的显隐开关；若有人给这些类设了 display，hidden 会被压过 */
+.ml [hidden] {
+  display: none !important;
+}
+
+/* ---------- 头部 ---------- */
+.ml-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.ml-heading {
+  min-width: 0;
+}
+
+.ml-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.ml-stats {
+  margin: 3px 0 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--ml-muted);
+}
+
+.ml-header-actions {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* 分段控件（图标 / 列表） */
+.ml-seg {
+  display: inline-flex;
+  border: 1px solid var(--ml-line);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.ml-seg-btn {
+  border: 0;
+  background: transparent;
+  color: var(--ml-muted);
+  font-size: 12px;
+  font-family: inherit;
+  padding: 5px 10px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.ml-seg-btn + .ml-seg-btn {
+  border-left: 1px solid var(--ml-line);
+}
+
+.ml-seg-btn:hover {
+  background: var(--ml-hover);
+  color: var(--ml-text);
+}
+
+.ml-seg-btn.is-active {
+  background: var(--ml-brand);
+  color: #fff;
+}
+
+.ml-btn {
+  flex: 0 0 auto;
+  border: 1px solid var(--ml-line);
+  background: var(--ml-card);
+  color: var(--ml-text);
+  border-radius: 8px;
+  font-size: 12px;
+  font-family: inherit;
+  padding: 5px 11px;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+
+.ml-btn:hover {
+  border-color: var(--ml-brand);
+  color: var(--ml-brand);
+}
+
+.ml-btn-primary {
+  background: var(--ml-brand);
+  border-color: var(--ml-brand);
+  color: #fff;
+}
+
+.ml-btn-primary:hover {
+  background: var(--brand-hover, #4a4ab8);
+  border-color: var(--brand-hover, #4a4ab8);
+  color: #fff;
+}
+
+/* ---------- 过滤框 ---------- */
+.ml-searchbar {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.ml-search {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--ml-line);
+  background: var(--field, var(--ml-card));
+  color: var(--ml-text);
+  border-radius: 8px;
+  font-size: 12.5px;
+  font-family: inherit;
+  padding: 6px 28px 6px 10px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.ml-search:focus {
+  border-color: var(--ml-brand);
+}
+
+.ml-search::placeholder {
+  color: var(--ml-muted);
+}
+
+.ml-search-clear {
+  position: absolute;
+  right: 6px;
+  width: 18px;
+  height: 18px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--ml-chip);
+  color: var(--ml-muted);
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+}
+
+.ml-search-clear:hover {
+  background: var(--ml-brand);
+  color: #fff;
+}
+
+/* ---------- 分类页签 ---------- */
+.ml-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.ml-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  max-width: 180px;
+  border: 1px solid var(--ml-line);
+  background: var(--ml-card);
+  color: var(--ml-text);
+  border-radius: 999px;
+  font-size: 12px;
+  font-family: inherit;
+  padding: 3px 11px;
+  cursor: pointer;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+
+.ml-tab:hover {
+  border-color: var(--ml-brand);
+  color: var(--ml-brand);
+}
+
+.ml-tab.is-active {
+  background: var(--ml-brand);
+  border-color: var(--ml-brand);
+  color: #fff;
+}
+
+.ml-tab-num {
+  font-size: 11px;
+  color: var(--ml-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.ml-tab.is-active .ml-tab-num {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.ml-tab-add {
+  border-style: dashed;
+  color: var(--ml-muted);
+}
+
+/* ---------- 排序栏 ---------- */
+.ml-sortbar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ml-sortbar-label {
+  font-size: 12px;
+  color: var(--ml-muted);
+}
+
+.ml-sort-btn {
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--ml-muted);
+  border-radius: 6px;
+  font-size: 12px;
+  font-family: inherit;
+  padding: 3px 8px;
+  cursor: pointer;
+}
+
+.ml-sort-btn:hover {
+  background: var(--ml-hover);
+  color: var(--ml-text);
+}
+
+.ml-sort-btn.active {
+  color: var(--ml-brand);
+  border-color: var(--ml-brand);
+}
+
+.ml-sort-dir {
+  border: 1px solid var(--ml-line);
+  background: var(--ml-card);
+  color: var(--ml-text);
+  border-radius: 6px;
+  font-size: 12px;
+  font-family: inherit;
+  width: 26px;
+  padding: 3px 0;
+  cursor: pointer;
+}
+
+.ml-sort-dir:hover {
+  border-color: var(--ml-brand);
+  color: var(--ml-brand);
+}
+
+.ml-tabs-gap {
+  flex: 1 1 auto;
+}
+
+/* ---------- 状态行 ---------- */
+.ml-status {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--ml-muted);
+}
+
+.ml-status.is-warn {
+  color: #c47f0a;
+}
+
+.ml-status.is-err {
+  color: var(--ml-err);
+}
+
+.ml-status.is-ok {
+  color: var(--ml-ok);
+}
+
+/* ---------- 列表容器 ---------- */
+.ml-list {
+  display: grid;
+  gap: 8px;
+  max-height: 320px;
+  overflow: auto;
+  padding: 2px;
+}
+
+/* 图标视图：自适应网格 */
+.ml-list.is-icon {
+  grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
+}
+
+/* 列表视图：单列 */
+.ml-list.is-list {
+  grid-template-columns: 1fr;
+  gap: 2px;
+}
+
+/* ---------- 条目：图标视图 ---------- */
+.ml-list.is-icon .ml-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  padding: 8px 6px;
+  cursor: pointer;
+  outline: none;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.ml-list.is-icon .ml-item:hover,
+.ml-list.is-icon .ml-item:focus-visible {
+  background: var(--ml-hover);
+  border-color: var(--ml-line);
+}
+
+.ml-list.is-icon .ml-item-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  flex: 0 0 auto;
+}
+
+.ml-list.is-icon .ml-icon-img {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  image-rendering: -webkit-optimize-contrast;
+}
+
+.ml-list.is-icon .ml-glyph {
+  width: 26px;
+  height: 26px;
+  color: var(--ml-muted);
+}
+
+.ml-list.is-icon .ml-item-body {
+  min-width: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+}
+
+.ml-list.is-icon .ml-item-name {
+  font-size: 12px;
+  line-height: 1.35;
+  text-align: center;
+  width: 100%;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  word-break: break-all;
+}
+
+/* 图标视图不显示路径/元信息/操作按钮（悬停时用 title 看完整路径） */
+.ml-list.is-icon .ml-item-path,
+.ml-list.is-icon .ml-item-meta,
+.ml-list.is-icon .ml-item-acts {
+  display: none;
+}
+
+/* ---------- 条目：列表视图 ---------- */
+.ml-list.is-list .ml-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  padding: 5px 8px;
+  cursor: pointer;
+  outline: none;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.ml-list.is-list .ml-item:hover,
+.ml-list.is-list .ml-item:focus-visible {
+  background: var(--ml-hover);
+  border-color: var(--ml-line);
+}
+
+.ml-list.is-list .ml-item-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  flex: 0 0 auto;
+}
+
+.ml-list.is-list .ml-icon-img {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  image-rendering: -webkit-optimize-contrast;
+}
+
+.ml-list.is-list .ml-glyph {
+  width: 17px;
+  height: 17px;
+  color: var(--ml-muted);
+}
+
+.ml-list.is-list .ml-item-body {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.ml-list.is-list .ml-item-name {
+  flex: 0 1 auto;
+  font-size: 12.5px;
+  font-weight: 500;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.ml-list.is-list .ml-item-path {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 11.5px;
+  color: var(--ml-muted);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  direction: rtl; /* 路径过长时优先保留末级（文件名）可见 */
+  text-align: left;
+}
+
+.ml-list.is-list .ml-item-meta {
+  flex: 0 0 auto;
+  font-size: 11px;
+  color: var(--ml-muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* 操作按钮：列表视图下悬停/聚焦才出现（平时不抢视觉） */
+.ml-list.is-list .ml-item-acts {
+  flex: 0 0 auto;
+  display: none;
+  gap: 4px;
+}
+
+.ml-list.is-list .ml-item:hover .ml-item-acts,
+.ml-list.is-list .ml-item:focus-within .ml-item-acts {
+  display: flex;
+}
+
+.ml-icon-btn {
+  border: 1px solid var(--ml-line);
+  background: var(--ml-card);
+  color: var(--ml-muted);
+  border-radius: 6px;
+  font-size: 11px;
+  font-family: inherit;
+  padding: 2px 7px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.ml-icon-btn:hover {
+  border-color: var(--ml-brand);
+  color: var(--ml-brand);
+}
+
+/* 「已重命名」小徽标 */
+.ml-badge {
+  display: inline-block;
+  margin-left: 4px;
+  padding: 0 4px;
+  border-radius: 4px;
+  background: var(--chip, #f5f6f8);
+  color: var(--ml-muted);
+  font-size: 10px;
+  line-height: 1.6;
+  vertical-align: middle;
+}
+
+/* ---------- 空状态 ---------- */
+.ml-empty {
+  min-height: 92px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  border: 1px dashed var(--ml-line);
+  border-radius: 10px;
+  padding: 14px;
+  text-align: center;
+}
+
+.ml-empty-icon {
+  font-size: 22px;
+  line-height: 1;
+}
+
+.ml-empty-text {
+  margin: 0;
+  font-size: 13px;
+  color: var(--ml-text);
+}
+
+.ml-empty-hint {
+  margin: 0;
+  font-size: 12px;
+  color: var(--ml-muted);
+}
+
+/* ---------- 底部提示 ---------- */
+.ml-foot {
+  font-size: 11.5px;
+  color: var(--ml-muted);
+}
+
+/* ---------- 右键菜单 ---------- */
+.ml-menu {
+  position: fixed;
+  z-index: 40;
+  min-width: 168px;
+  max-height: 60vh;
+  overflow: auto;
+  background: var(--ml-card);
+  border: 1px solid var(--ml-line);
+  border-radius: 10px;
+  box-shadow: var(--dialog-shadow, 0 12px 40px rgba(0, 0, 0, 0.2));
+  padding: 4px;
+}
+
+.ml-menu-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  border: 0;
+  background: transparent;
+  color: var(--ml-text);
+  border-radius: 6px;
+  font-size: 12.5px;
+  font-family: inherit;
+  padding: 5px 10px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.ml-menu-item:hover {
+  background: var(--ml-brand);
+  color: #fff;
+}
+
+.ml-menu-sep {
+  height: 1px;
+  margin: 4px 6px;
+  background: var(--divider-soft, var(--ml-line));
+}
+
+.ml-menu-label {
+  padding: 3px 10px;
+  font-size: 11px;
+  color: var(--ml-muted);
+}
+
+/* ---------- 内联浮层（重命名 / 新建分类） ---------- */
+.ml-prompt {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.28);
+}
+
+.ml-prompt-card {
+  width: min(320px, 84vw);
+  background: var(--ml-card);
+  border: 1px solid var(--ml-line);
+  border-radius: 12px;
+  box-shadow: var(--dialog-shadow, 0 12px 40px rgba(0, 0, 0, 0.2));
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ml-prompt-title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.ml-prompt-input {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--ml-line);
+  background: var(--field, var(--ml-card));
+  color: var(--ml-text);
+  border-radius: 8px;
+  font-size: 13px;
+  font-family: inherit;
+  padding: 6px 10px;
+  outline: none;
+}
+
+.ml-prompt-input:focus {
+  border-color: var(--ml-brand);
+}
+
+.ml-prompt-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}

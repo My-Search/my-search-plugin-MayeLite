@@ -1,0 +1,22 @@
+# MayeLite 快速启动 插件 —— 打包忽略清单
+# 打包器：node tools/pack-plugin.mjs（宿主同一份实现；匹配规则见该文件）
+
+# 开发期产物与工具（绝不能进包：包体虚胖，且会泄漏内部文件）
+test/
+tools/
+dist/
+.github/
+README.md
+*.log
+*.bak
+
+# 系统垃圾
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 编辑器
+.vscode/
+.idea/
+*.swp
+*~

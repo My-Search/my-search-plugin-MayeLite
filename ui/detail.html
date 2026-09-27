@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>MayeLite 快速启动</title>
+</head>
+<body>
+  <!-- 插件界面骨架。所有动态区域由 index.js 用 innerHTML 重建，
+       因此事件一律委托在 #app 上（列表节点会被整体替换）。
+       closeBehavior=minimize：关闭视图只是把 DOM 停放到宿主停车区，
+       脚本上下文保活不重跑，所以每次变更都必须即时落盘。 -->
+  <div id="app" class="ml">
+
+    <!-- 头部：标题 + 常驻统计 + 视图切换 -->
+    <header class="ml-header">
+      <div class="ml-heading">
+        <h2 class="ml-title">快速启动</h2>
+        <!-- 统计常驻：0 项也照常显示，不留空行 -->
+        <p id="ml-stats" class="ml-stats"></p>
+      </div>
+      <div class="ml-header-actions">
+        <!-- 视图切换：图标 / 列表（与 Maye Lite 的「图标 / 列表」视图对应） -->
+        <div class="ml-seg" id="ml-viewmode" role="group" aria-label="视图">
+          <button class="ml-seg-btn" type="button" data-view="icon" title="图标视图">图标</button>
+          <button class="ml-seg-btn" type="button" data-view="list" title="列表视图">列表</button>
+        </div>
+        <button id="ml-add" class="ml-btn ml-btn-primary" type="button">添加</button>
+      </div>
+    </header>
+
+    <!-- 搜索：在当前固定项里按名称/路径过滤 -->
+    <div class="ml-searchbar">
+      <input id="ml-search" class="ml-search" type="text" autocomplete="off" spellcheck="false"
+             placeholder="在当前固定项里过滤（名称 / 路径）">
+      <button id="ml-search-clear" class="ml-search-clear" type="button" hidden
+              aria-label="清除过滤">×</button>
+    </div>
+
+    <!-- 分类页签：数字为当前数据下的条目数；「全部」恒在 -->
+    <nav class="ml-tabs" id="ml-tabs" role="tablist"></nav>
+
+    <!-- 排序：默认按添加时间倒序；仅作用于当前分类内 -->
+    <div class="ml-sortbar" id="ml-sort">
+      <span class="ml-sortbar-label">排序</span>
+      <button class="ml-sort-btn" type="button" data-sort="created">添加时间</button>
+      <button class="ml-sort-btn" type="button" data-sort="name">名称</button>
+      <button class="ml-sort-btn" type="button" data-sort="type">类型</button>
+      <span class="ml-tabs-gap"></span>
+      <button id="ml-sort-dir" class="ml-sort-dir" type="button" title="切换升降序">↓</button>
+    </div>
+
+    <!-- 过程/异常消息：正常时清空并整行隐藏 -->
+    <p id="ml-status" class="ml-status" hidden></p>
+
+    <!-- 条目列表（innerHTML 重建；图标 / 列表两种视图共用同一个容器，靠 class 切换） -->
+    <div id="ml-list" class="ml-list" role="list"></div>
+
+    <!-- 空状态：无数据 或 当前分类/过滤无结果，两套文案由 JS 决定 -->
+    <div id="ml-empty" class="ml-empty" hidden>
+      <span class="ml-empty-icon" aria-hidden="true">📌</span>
+      <p class="ml-empty-text" id="ml-empty-text">还没有固定项</p>
+      <p class="ml-empty-hint" id="ml-empty-hint">把文件或文件夹拖到本界面，或用上面的「添加」按钮</p>
+    </div>
+
+    <!-- 底部提示 -->
+    <footer class="ml-foot">
+      <span>单击打开 · 右键菜单可重命名/分类/定位/移除 · 拖入即固定</span>
+    </footer>
+
+    <!-- 右键上下文菜单（单例，定位到鼠标处） -->
+    <div id="ml-menu" class="ml-menu" hidden role="menu"></div>
+
+    <!-- 重命名 / 新建分类的内联编辑浮层 -->
+    <div id="ml-prompt" class="ml-prompt" hidden>
+      <div class="ml-prompt-card" role="dialog" aria-modal="true">
+        <p class="ml-prompt-title" id="ml-prompt-title">重命名</p>
+        <input id="ml-prompt-input" class="ml-prompt-input" type="text" autocomplete="off">
+        <div class="ml-prompt-actions">
+          <button id="ml-prompt-cancel" class="ml-btn" type="button">取消</button>
+          <button id="ml-prompt-ok" class="ml-btn ml-btn-primary" type="button">确定</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="index.js"></script>
+</body>
+</html>

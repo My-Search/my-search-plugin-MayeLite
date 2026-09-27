@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="200" height="200" role="img" aria-label="MayeLite 快速启动">
+  <defs>
+    <linearGradient id="ml-bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#5B5BD6"/>
+      <stop offset="100%" stop-color="#8B5CF6"/>
+    </linearGradient>
+  </defs>
+  <rect x="64" y="64" width="896" height="896" rx="200" fill="url(#ml-bg)"/>
+
+  <!-- 九宫格：代表「固定在这里的一组常用项」 -->
+  <g fill="#ffffff" opacity="0.92">
+    <rect x="232" y="248" width="168" height="168" rx="40"/>
+    <rect x="428" y="248" width="168" height="168" rx="40"/>
+    <rect x="232" y="444" width="168" height="168" rx="40"/>
+    <rect x="428" y="444" width="168" height="168" rx="40"/>
+  </g>
+
+  <!-- 图钉：代表「固定」 -->
+  <g transform="translate(596 556)">
+    <path d="M118 0a44 44 0 0 1 44 44v10a30 30 0 0 1-18 27l-14 7v92l52 74a26 26 0 0 1-21 41H-3a26 26 0 0 1-21-41l52-74v-92l-14-7A30 30 0 0 1-4 54V44A44 44 0 0 1 40 0Z"
+          fill="#ffffff"/>
+    <rect x="55" y="284" width="16" height="72" rx="8" fill="#ffffff" opacity="0.75"/>
+  </g>
+
+  <!-- 右下角箭头：代表「快速打开」 -->
+  <path d="M700 716l124 124M824 716v124H700" fill="none" stroke="#ffffff" stroke-width="46"
+        stroke-linecap="round" stroke-linejoin="round" opacity="0.95"/>
+</svg>

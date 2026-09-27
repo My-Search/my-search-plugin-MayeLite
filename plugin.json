@@ -1,0 +1,40 @@
+{
+  "id": "com.my-search.mayelite",
+  "name": "MayeLite 快速启动",
+  "version": "1.0.0",
+  "apiVersion": 1,
+  "minAppVersion": "7.9.15",
+  "author": "My-Search",
+  "description": "把常用文件/文件夹拖进来固定，随时一键打开；支持分类、排序与拖拽整理",
+  "homepage": "https://github.com/My-Search/my-search-plugin-MayeLite",
+  "icon": "icon.svg",
+  "permissions": [
+    "ui.inlay",
+    "ui.notify",
+    "store",
+    "file.read"
+  ],
+  "optionalPermissions": [
+    "clipboard.write"
+  ],
+  "contributes": {
+    "searchItem": {
+      "title": "MayeLite 快速启动",
+      "desc": "固定常用文件/文件夹（快速启动 / 收藏 / 常用文件），拖入即固定，回车打开",
+      "keyword": "快速启动",
+      "icon": "icon.svg",
+      "subSearch": true
+    },
+    "handlers": {
+      "files": true,
+      "folders": true
+    },
+    "detailView": {
+      "entry": "ui/detail.html",
+      "script": "ui/index.js",
+      "mode": "inlay",
+      "closeBehavior": "minimize",
+      "theme": "inherit"
+    }
+  }
+}
