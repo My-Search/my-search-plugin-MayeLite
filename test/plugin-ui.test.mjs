@@ -312,6 +312,19 @@ function bootstrap(opts = {}) {
       system: {
         writeClipboard: function (t) { window.__calls.clipboard.push(t); return Promise.resolve(true); }
       },
+      // 宿主自定义快捷键动作：把插件注册的处理器收进 window.__shortcutHandlers，
+      // 供测试用 window.__fireShortcut(name) 模拟「用户按下了全局热键」。
+      shortcuts: (function () {
+        window.__shortcutHandlers = {};
+        return {
+          onAction: function (name, handler) {
+            if (typeof handler !== 'function') return function () {};
+            (window.__shortcutHandlers[name] || (window.__shortcutHandlers[name] = [])).push(handler);
+            return function () { window.__shortcutHandlers[name] = []; };
+          },
+          offAction: function (name) { delete window.__shortcutHandlers[name]; }
+        };
+      })(),
       input: {
         attachments: function () { return Promise.resolve(window.__attachments || []); },
         readFile: function (p) { window.__calls.readFile.push(p); return Promise.resolve('data:text/plain;base64,QUJD'); },
@@ -380,6 +393,12 @@ function bootstrap(opts = {}) {
   /** 派发「附件变化」广播 */
   window.__attachmentsChanged = function () {
     document.dispatchEvent(new CustomEvent('ms-attachments-changed'));
+  };
+  /** 模拟宿主派发一次自定义快捷键动作（全局热键被按下） */
+  window.__fireShortcut = function (name) {
+    var hs = (window.__shortcutHandlers || {})[name] || [];
+    for (var i = 0; i < hs.length; i++) hs[i]();
+    return hs.length;
   };
   `;
 }
@@ -951,6 +970,46 @@ if (scopeCss) {
   const st = await readStore(p.ev);
   check("补抓到的图标同时落盘", !!st && st.items[0].icon && st.items[0].icon.indexOf("data:image/") === 0,
     JSON.stringify(st && st.items[0]));
+  await p.close();
+}
+
+/* ============================================================
+ * 场景 16：全局快捷键动作（清单 contributes.shortcut → 宿主转发）
+ *
+ * 宿主把清单里声明的本地动作名 `open` 注册成全局热键（默认 Ctrl+Alt+B），
+ * 按下后打开本视图并把动作名派发给插件脚本。插件用
+ * `ms.shortcuts.onAction('open', fn)` 接住并把焦点落到顶部过滤框，
+ * 使用户可直接输入关键词过滤固定项。
+ * ============================================================ */
+{
+  const p = await newPage({ registered: [] }, {});
+  await p.ev(`
+    window.__mem.pins = { version:1, cats:[], prefs:{view:'list',sort:'manual',dir:'desc'},
+      items:[
+        { id:'a', path:'C:\\\\d\\\\周报.docx', name:'周报.docx', kind:'file', cat:'default', createdAt:1 }
+      ] };
+    window.__boot();
+  `);
+  await sleep(140);
+
+  const registered = await p.ev("(window.__shortcutHandlers && window.__shortcutHandlers['open'] || []).length");
+  check("插件已注册 open 快捷键动作处理器", registered === 1, `handlers=${registered}`);
+
+  // 先把焦点挪到别的控件上，模拟「按热键前焦点不在过滤框」
+  await p.ev("document.getElementById('ml-add').focus()");
+  const before = await p.ev("document.activeElement && document.activeElement.id");
+  check("触发前焦点不在过滤框", before !== "ml-search", `active=${before}`);
+
+  // 模拟宿主派发一次 open 动作
+  const fired = await p.ev("window.__fireShortcut('open')");
+  await sleep(60);
+  const after = await p.ev("document.activeElement && document.activeElement.id");
+  check("热键派发后焦点落到过滤框（可直接输入关键词）", after === "ml-search", `active=${after}`);
+  check("派发确实命中至少一个处理器", fired >= 1, `fired=${fired}`);
+
+  // 未注册的动作名不应报错（清单改版后新增动作的兜底）
+  const unknownFired = await p.ev("window.__fireShortcut('unknown-action')");
+  check("未知动作名静默忽略（不抛错）", unknownFired === 0, `fired=${unknownFired}`);
   await p.close();
 }
 

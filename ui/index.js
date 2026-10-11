@@ -1103,6 +1103,35 @@
     });
   }
 
+  /* ======================= 全局快捷键动作（宿主转发） =======================
+   *
+   * 清单 contributes.shortcut 里声明了本地动作名 `open`；宿主把它注册成全局热键
+   * （`plugin:com.my-search.mayelite:open`，默认 `Ctrl+Alt+B`），按下后打开本视图
+   * 并把动作名派发到这里。行为：把焦点落到顶部过滤框，用户即可**直接输入关键词**
+   * 过滤固定项 → 回车 / 单击打开目标，一键直达（与 Maye Lite 的呼出体验一致）。
+   *
+   * 宿主的派发时机在视图已挂载/恢复之后（见 App.vue runPluginActionByShortcut），
+   * 因此这里只管聚焦；minimize 保活恢复的场景 DOM 仍在，聚焦照常有效。
+   */
+  function focusFilter() {
+    var searchEl = dom["ml-search"];
+    if (!searchEl) return;
+    try {
+      searchEl.focus();
+      searchEl.select();
+    } catch (e) { /* ignore */ }
+  }
+
+  /**
+   * 处理宿主派发的快捷键动作。只有 `open` 是这个插件认识的动作；
+   * 其它名字（清单改版后新增）静默忽略——宿主对「没处理器」的场景会自行提示。
+   */
+  if (ms && ms.shortcuts && typeof ms.shortcuts.onAction === "function") {
+    ms.shortcuts.onAction("open", function () {
+      focusFilter();
+    });
+  }
+
   // ===== 事件绑定 =====
   (function bind() {
     var listEl = dom["ml-list"];
